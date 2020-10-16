@@ -39,23 +39,23 @@ def format_urls(question_type, file_1, file_2=None, file_3=None):
     with open(file_1) as f1:
         try:
             with open(file_2) as f2: # only -ab & -abc have >1 url file
+                # helper lambda saves some code later on "gf" means get first
+                gf = lambda x: x.split()[1]
                 if question_type == '-ab': # returns list of url pairs
-                    return [(line1.split()[1],line2.split()[1])\
-                            for line1, line2 in zip(f1,f2)]
+                    return [(gf(line1),gf(line2)) for line1, line2 in zip(f1,f2)]
                 elif question_type == '-abc':
                     with open(file_3) as f3: # returns list of url trios
-                        return [(line1.split()[1],line2.split()[1],line3.split()[1])\
-                                for line1, line2, line3 in zip(f1, f2, f3)]
+                        return [(gf(line1),gf(line2),gf(line3)) for line1, line2, line3 in zip(f1, f2, f3)]
         except:
             if question_type == '-mc' or question_type == '-trs':
                 names, urls = zip(*(l.split(' ', 1) for l in f1))
                 return urls, names
             elif question_type == '-mushra': # returns test & reference url lists
                 lines = f1.readlines() # ref audio is embedded in the question
-                ref_url_list =  [os.path.join(config.mushra_root, config.mushra_ref_folder,\
+                ref_url_list =  [os.path.join(config.mushra_root, config.mushra_ref_folder,
                                 line.replace("\n", "")) for line in lines]
                 # creates list containing sets of urls which vary only by folder name
-                test_url_list = [[os.path.join(config.mushra_root, folder,\
+                test_url_list = [[os.path.join(config.mushra_root, folder,
                                 line.replace("\n", "")) for folder in config.mushra_folders]
                                 for line in lines]
                 return test_url_list, ref_url_list
@@ -167,7 +167,7 @@ def main():
 
     # get question template blocks from elements JSON
     # element order differs between surveys- check if you're using your own template
-    basis_question_dict = {'-ab': elements[11],'-mc': elements[7],'-trs':elements[10],\
+    basis_question_dict = {'-ab': elements[11],'-mc': elements[7],'-trs':elements[10],
                            '-abc': elements[12],'-mushra': elements[9]}
     basis_blocks = elements[0]
     basis_flow = elements[1]
@@ -204,8 +204,8 @@ def main():
                                             basis_question=basis_question_dict[arg],
                                             question_type=arg,
                                             question_function=handler_dict[arg],
-                                            question_text=Template(q_text_dict[arg]).substitute\
-                                                (ref_url=mushra_ref_urls[mushra_counter],
+                                            question_text=Template(q_text_dict[arg]).substitute(
+                                                ref_url=mushra_ref_urls[mushra_counter],
                                                  urls=urls,
                                                  sentence=mc_sentences[mc_filenames[mc_counter]])))
             q_counter += 1
